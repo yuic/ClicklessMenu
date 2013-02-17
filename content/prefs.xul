@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<!DOCTYPE overlay SYSTEM "chrome://clicklessmenu/locale/prefs.dtd">
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://clicklessmenu/content/clicklessmenu.css" type="text/css"?>
+
+<prefwindow xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	id="clicklessmenu.pref"
+	title="&pref.window.title;"
+	bottons="accept,cancel"
+	ondialogaccept="Pref.userAcceptWin = true;"
+	onload="Pref.load();"
+	onunload="Pref.unload();" >
+
+	<prefpane id="mainPane" flex="1">
+	<notificationbox id="boxNotify" flex="1">
+
+		<!-- 設定ツリー -->
+		<groupbox flex="1">
+			<caption label="&pref.tree.caption;"/>
+			<hbox flex="1">
+				<tree id="cmdtree" flex="1" editable="true" enableColumnDrag="true" seltype="single" onmousemove="treeView.moveCursor(event);" style="width:500px; height:250px;">
+					<treecols>
+						<treecol id="icon" label="" flex="1"/>							<splitter class="tree-splitter" />
+						<treecol id="name" label="&pref.tree.name;" flex="2"/>	<splitter class="tree-splitter" />
+						<treecol id="url" label="&pref.tree.url_script;" flex="20"/>	<splitter class="tree-splitter" />
+						<treecol id="isScript" label="&pref.tree.isScript;"
+											type="checkbox" editable="true" flex="0"/>	<splitter class="tree-splitter" />
+						<treecol id="delete" label="&pref.tree.delete;" flex="0"/>
+					</treecols>
+					<treechildren ondragstart="treeView.dragStart(event);" onclick="treeView.clicked(event);"  ondblclick="treeView.dblclicked(event);" />
+				</tree>
+			</hbox>
+			<hbox align="right"><label value="&pref.tree.description;" /></hbox>
+		</groupbox>
+
+		<!-- 開閉タイミング -->
+		<groupbox align="start">
+			<caption label="&pref.timing.caption;"/>
+			<hbox align="center">
+				<label value="&pref.timing.open1;"/>
+				<textbox id="menuDurOpen" type="number" min="0" max="9999" increment="1" decimalplaces="0" size="5" style="width:55px;"/>
+				<label value="&pref.timing.open2;"/>
+			</hbox>
+			<hbox align="center">
+				<label value="&pref.timing.close1;"/>
+				<textbox id="menuDurClose" type="number" min="0" max="9999" increment="1" decimalplaces="0" size="5" style="width:55px;"/>
+				<label value="&pref.timing.close2;" />
+			</hbox>
+			<checkbox id="enableTxtField" label="&pref.timing.enableTxtField;"/>
+		</groupbox>
+
+		<hbox>
+			<!-- position of open the menu -->
+			<groupbox flex="0">
+				<caption label="&pref.pos.caption;"/>
+				<description value="&pref.pos.description;"/>
+				<vbox>
+					<hbox align="center">
+						<label value="&pref.pos.x;"/>
+							<textbox id="menuPosX" type="number" min="-999" max="999" increment="1" decimalplaces="0" size="5" style="width:50px;"/>
+								<label value="px"/>
+					</hbox>
+					<hbox align="center">
+						<label value="&pref.pos.y;"/>
+							<textbox id="menuPosY" type="number" min="-999" max="999" increment="1" decimalplaces="0" size="5" style="width:50px;"/>
+								<label value="px"/>
+					</hbox>
+				</vbox>
+			</groupbox>
+
+			<!-- メニュー選択時の挙動 -->
+			<groupbox flex="2">
+				<caption label="&pref.open.caption;"/>
+
+				<grid flex="1" style="border: inset ButtonShadow 1px;" onselect="Pref.tabOpenPosChanged(event);">
+					<columns>
+						<column/>
+						<column flex="1"/>
+						<column/>
+					</columns>
+
+					<rows>
+						<row>
+							<listheader label="&pref.open.head1;" />
+							<listheader label="&pref.open.head2;"/>
+							<listheader label="&pref.open.head3;"/>
+						</row>
+
+						<row align="center">
+							<label value="&pref.open.buttonprimary;"/>
+							<menulist id="openTabPos0" sizetopopup="always">
+								<menupopup>
+									<menuitem label="&pref.open.position0;" value="0"/>
+									<menuitem label="&pref.open.position1;" value="1"/>
+									<menuitem label="&pref.open.position2;" value="2"/>
+									<menuitem label="&pref.open.position3;" value="3"/>
+								</menupopup>
+							</menulist>
+							<hbox><spacer flex="1"/><checkbox id="openTabActivate0"/><spacer flex="1"/></hbox>
+						</row>
+
+						<row align="center">
+							<label value="&pref.open.buttonwheel;"/>
+							<menulist id="openTabPos1"  sizetopopup="always">
+								<menupopup>
+									<menuitem label="&pref.open.position0;" value="0"/>
+									<menuitem label="&pref.open.position1;" value="1"/>
+									<menuitem label="&pref.open.position2;" value="2"/>
+									<menuitem label="&pref.open.position3;" value="3"/>
+								</menupopup>
+							</menulist>
+							<hbox><spacer flex="1"/><checkbox id="openTabActivate1"/><spacer flex="1"/></hbox>
+						</row>
+
+						<row align="center">
+							<label value="&pref.open.buttonsecondary;"/>
+							<menulist id="openTabPos2"  sizetopopup="always">
+								<menupopup>
+									<menuitem label="&pref.open.position0;" value="0"/>
+									<menuitem label="&pref.open.position1;" value="1"/>
+									<menuitem label="&pref.open.position2;" value="2"/>
+									<menuitem label="&pref.open.position3;" value="3"/>
+								</menupopup>
+							</menulist>
+							<hbox><spacer flex="1"/><checkbox id="openTabActivate2"/><spacer flex="1"/></hbox>
+						</row>
+
+					</rows>
+				</grid>
+
+			</groupbox>
+		</hbox>
+
+		<!-- デフォルトに戻す -->
+		<groupbox>
+			<caption label="&pref.restore.caption;"/>
+			<hbox align="center">
+				<button id="restoreBtn" image="chrome://clicklessmenu/content/icon/locked_g.ico" label=" &pref.restore.button;" type="menu-button" oncommand="Pref.doRestore(event);">
+					<menupopup>
+						<menuitem id="restoreGuard" type="checkbox" checked="true" label="&pref.restore.protect;" oncommand="Pref.guardRestore(event);"/>
+							</menupopup>
+				</button>
+				<spacer width="10" />
+				<vbox >
+					<label value="&pref.restore.description1;" />
+					<label value="&pref.restore.description2;" />
+				</vbox>
+			</hbox>
+		</groupbox>
+
+	</notificationbox>
+	</prefpane>
+
+	<script type="application/x-javascript" src="chrome://clicklessmenu/content/util.js" />
+	<script type="application/x-javascript" src="chrome://clicklessmenu/content/storage.jsm" />
+	<script type="application/x-javascript" src="chrome://clicklessmenu/content/pref.js" />
+
+</prefwindow>

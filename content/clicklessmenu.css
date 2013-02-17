@@ -1,0 +1,7 @@
+/* [preference] menuitem tab  tree decoration */
+treechildren::-moz-tree-row(hover) {
+	border-style: solid;
+	border-color: rgba(0,0,0,0) rgba(0,0,0,0) currentcolor;
+}
+treechildren::-moz-tree-cell-text(newItem) { color: GrayText; }
+treechildren::-moz-tree-checkbox(checked)  { list-style-image: url('chrome://global/skin/checkbox/cbox-check.gif'); }

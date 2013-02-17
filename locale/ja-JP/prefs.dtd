@@ -1,0 +1,41 @@
+<!ENTITY pref.window.title "ClicklessMenuの設定">
+
+<!ENTITY pref.tree.caption "メニュー項目">
+	<!ENTITY pref.tree.name              "項目名">
+	<!ENTITY pref.tree.url_script        "URL/SCRIPT">
+	<!ENTITY pref.tree.isScript          "SCRIPT?">
+	<!ENTITY pref.tree.delete            "x">
+	<!ENTITY pref.tree.description       "URL/SCRIPTフィールドが空の項目は登録されません">
+
+<!ENTITY pref.timing.caption "メニュー開閉タイミング">
+	<!ENTITY pref.timing.open1           "テキストが選択されてから">
+	<!ENTITY pref.timing.open2           "ミリ秒後に開く">
+	<!ENTITY pref.timing.close1          "メニューからカーソルが離れた状態で">
+	<!ENTITY pref.timing.close2          "ミリ秒経過したら閉じる">
+	<!ENTITY pref.timing.enableTxtField  "テキストフィールドの文字を選択したときもポップアップする">
+
+<!ENTITY pref.pos.caption "メニュー表示位置">
+	<!ENTITY pref.pos.description        "*カーソル位置からのオフセット">
+	<!ENTITY pref.pos.x                  "右方向 ： ">
+	<!ENTITY pref.pos.y                  "下方向 ： ">
+
+<!ENTITY pref.open.caption "メニュークリック時の挙動">
+	<!ENTITY pref.open.head1             "クリックするボタン">
+	<!ENTITY pref.open.head2             "タブを開く場所">
+	<!ENTITY pref.open.head3             "タブをアクティブ化">
+	<!ENTITY pref.open.buttonprimary     "主ボタン">
+	<!ENTITY pref.open.buttonwheel       "ホイールボタン">
+	<!ENTITY pref.open.buttonsecondary   "副ボタン">
+	<!ENTITY pref.open.position0         "現在のタブの右">
+	<!ENTITY pref.open.position1         "末尾">
+	<!ENTITY pref.open.position2         "新しいウィンドウ">
+	<!ENTITY pref.open.position3         "---">
+	<!ENTITY pref.open.description2      "　*ホイールクリック時は常に非アクティブ状態で実行します">
+	<!ENTITY pref.open.activatetab       "開いたタブをアクティブにする">
+
+<!ENTITY pref.restore.caption "デフォルトの復元">
+	<!ENTITY pref.restore.button         "復元">
+	<!ENTITY pref.restore.protect        "誤操作防止">
+	<!ENTITY pref.restore.description1   "現在の設定を破棄し、インストールファイルのデフォルト設定を復元します。">
+	<!ENTITY pref.restore.description2   "この操作はキャンセルできません。">
+

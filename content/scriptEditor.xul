@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE overlay SYSTEM "chrome://clicklessmenu/locale/scriptEditor.dtd">
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+
+<prefwindow xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	id="clicklessmenu.pref.scripteditor"
+	title="&editor.window.title;"
+	bottons="accept,cancel"
+	onload="ScriptEditor.load();"
+	onunload="ScriptEditor.unload();"
+	ondialogaccept="ScriptEditor.userAccept_Win = true;" >
+
+	<prefpane id="editPane" flex="1">
+		<textbox id='editArea' rows='20' cols='85' multiline='true' wrap='off' flex='1' style="font-family: monospace; font-size: 9pt;" />
+	</prefpane>
+
+	<script type="application/x-javascript" src="chrome://clicklessmenu/content/util.js" />
+	<script type="application/x-javascript" src="chrome://clicklessmenu/content/scriptEditor.js" />
+
+</prefwindow>

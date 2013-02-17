@@ -1,0 +1,41 @@
+<!ENTITY pref.window.title "ClicklessMenu Options">
+
+<!ENTITY pref.tree.caption "Menu items">
+	<!ENTITY pref.tree.name              "Item name">
+	<!ENTITY pref.tree.url_script        "URL/SCRIPT">
+	<!ENTITY pref.tree.isScript          "SCRIPT?">
+	<!ENTITY pref.tree.delete            "x">
+	<!ENTITY pref.tree.description       "The item will not be registered if 'URL/SCRIPT' field is empty.">
+
+<!ENTITY pref.timing.caption "Opening-closing timing">
+	<!ENTITY pref.timing.open1           "Open after">
+	<!ENTITY pref.timing.open2           "milli-seconds from when text is selected">
+	<!ENTITY pref.timing.close1          "Close after">
+	<!ENTITY pref.timing.close2          "milli-seconds from the cursor moves away from the menu">
+	<!ENTITY pref.timing.enableTxtField  "Also pop up when select characters in the input field">
+
+<!ENTITY pref.pos.caption "Display position of the menu">
+	<!ENTITY pref.pos.description        "*Offset from the cursor position">
+	<!ENTITY pref.pos.x                  "Rightward : ">
+	<!ENTITY pref.pos.y                  "Downward : ">
+
+<!ENTITY pref.open.caption "Behavior in selecting a menu">
+	<!ENTITY pref.open.head1             "Clicked mouse button">
+	<!ENTITY pref.open.head2             "Position for a new tab">
+	<!ENTITY pref.open.head3             "Activate new tab">
+	<!ENTITY pref.open.buttonprimary     "Primary button">
+	<!ENTITY pref.open.buttonwheel       "Middle button">
+	<!ENTITY pref.open.buttonsecondary   "Secondary button">
+	<!ENTITY pref.open.position0         "Right of current">
+	<!ENTITY pref.open.position1         "The end">
+	<!ENTITY pref.open.position2         "New window">
+	<!ENTITY pref.open.position3         "---">
+	<!ENTITY pref.open.description2      "　*Always runs in background when wheel-clicked.">
+	<!ENTITY pref.open.activatetab       "Activate opened tab">
+
+<!ENTITY pref.restore.caption "Restore the default setting">
+	<!ENTITY pref.restore.button         "Restore">
+	<!ENTITY pref.restore.protect        "Protect from wrong operation">
+	<!ENTITY pref.restore.description1   "Discard current settings and restore the default settings from the installer file.">
+	<!ENTITY pref.restore.description2   "This operation is not cancelable.">
+
