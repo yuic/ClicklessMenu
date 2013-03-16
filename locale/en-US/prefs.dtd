@@ -8,8 +8,11 @@
 	<!ENTITY pref.tree.description       "The item will not be registered if 'URL/SCRIPT' field is empty.">
 
 <!ENTITY pref.timing.caption "Opening-closing timing">
-	<!ENTITY pref.timing.open1           "Open after">
-	<!ENTITY pref.timing.open2           "milli-seconds from when text is selected">
+	<!ENTITY pref.timing.open            "The trigger to open the menu">
+	<!ENTITY pref.timing.open.key        "Key">
+	<!ENTITY pref.timing.open.selecttext "Select the string">
+	<!ENTITY pref.timing.open.presskey   "Press the specified key after select the string">
+	<!ENTITY pref.timing.open.holdkey    "Select the string while hold down the specified key">
 	<!ENTITY pref.timing.close1          "Close after">
 	<!ENTITY pref.timing.close2          "milli-seconds from the cursor moves away from the menu">
 	<!ENTITY pref.timing.enableTxtField  "Also pop up when select characters in the input field">
@@ -30,8 +33,6 @@
 	<!ENTITY pref.open.position1         "The end">
 	<!ENTITY pref.open.position2         "New window">
 	<!ENTITY pref.open.position3         "---">
-	<!ENTITY pref.open.description2      "　*Always runs in background when wheel-clicked.">
-	<!ENTITY pref.open.activatetab       "Activate opened tab">
 
 <!ENTITY pref.restore.caption "Restore the default setting">
 	<!ENTITY pref.restore.button         "Restore">

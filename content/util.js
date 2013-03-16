@@ -19,15 +19,20 @@ var $ATTRS = function(el, attr, children, style){
 var $isCommittable = function(winAccepted){
 	return ( Services.prefs.getBoolPref('browser.preferences.instantApply') || winAccepted );
 };
+var $extend = function(instantiatedBase, append){
+	for(var p in append) instantiatedBase[p] = append[p];
+	return instantiatedBase;
+};
 
 // common preference keys (except in delayed load keys)
 var PrefsKeys = [
 	// element id     ,  column name     ,  boolean <-> int (for explicit conversion)
 	['menuPosX'        , 'menuPosX'             ],
 	['menuPosY'        , 'menuPosY'             ],
-	['menuDurOpen'     , 'menuDurOpen'          ],
 	['menuDurClose'    , 'menuDurClose'         ],
 	['enableTxtField'  , 'enableTxtField'  , '1'],
+	['openTrigger'     , 'openTrigger'          ],
+	['triggerKey'      , 'triggerKey'           ],
 ];
 
 // append delayed load keys into PrefsKeys
@@ -40,3 +45,5 @@ var PrefsKeysAll = PrefsKeys.concat([
 	['openTabPos2'     , 'openTabPos2'          ],
 ]);
 
+var dummyF = function(){ return false; };
+var dummyN = function(){};

@@ -37,9 +37,27 @@
 		<groupbox align="start">
 			<caption label="&pref.timing.caption;"/>
 			<hbox align="center">
-				<label value="&pref.timing.open1;"/>
-				<textbox id="menuDurOpen" type="number" min="0" max="9999" increment="1" decimalplaces="0" size="5" style="width:55px;"/>
-				<label value="&pref.timing.open2;"/>
+				<grid>
+					<columns> <column/> <column/> </columns>
+					<rows>
+						<row align="center">
+							<label value="&pref.timing.open;:"/>
+							<menulist id="openTrigger" sizetopopup="always" onselect="$('triggerKey').disabled = this.value === '0'">
+								<menupopup>
+									<menuitem value="0" label="&pref.timing.open.selecttext;" />
+									<menuitem value="1" label="&pref.timing.open.presskey;" />
+									<menuitem value="2" label="&pref.timing.open.holdkey;" />
+								</menupopup>
+							</menulist>
+						</row>
+						<row align="center">
+							<hbox align="right"><label value="&pref.timing.open.key;:"/></hbox>
+							<hbox>
+								<textbox id="triggerKey" type="text" sizetopopup="always" style="width:120px;" onkeydown="Pref.capturekey(event);"/>
+							</hbox>
+						</row>
+					</rows>
+				</grid>
 			</hbox>
 			<hbox align="center">
 				<label value="&pref.timing.close1;"/>

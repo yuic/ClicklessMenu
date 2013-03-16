@@ -22,8 +22,6 @@ var windowListener = {
 			win.removeEventListener('load', arguments.callee, false);
 			if( !windowListener.isBrowser(win) ) return;
 
-			// for when open the 2nd browser window without init clips on 1st browser window
-			// if this put in "loadIntoWindow", "DB.createTables()" will be running when the first browser window was opened
 			Cu.import('chrome://clicklessmenu/content/storage.jsm');
 			DB.init();
 			for(var s in scopes) scopes[s].MenuManager.loadAppData();
@@ -38,15 +36,19 @@ var windowListener = {
 			if( !windowListener.isBrowser(win) ) return;
 
 			let $ = function(id){ return win.document.getElementById(id); };
-//			for(var a in scopes) dump('scope P : ' + a + '\n');
 			delete scopes[ $('mainPopupSet').removeChild($('CLMN_menu')).getAttribute('value') ];
-//			for(var b in scopes) dump('scope A : ' + b + '\n');
 			for(var s in scopes) scopes[s].MenuManager.loadAppData();
 		}, false);
 	},
 	onWindowTitleChange : function(){},
 	T: function(win){ return win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowInternal || Ci.nsIDOMWindow); },
 	isBrowser: function(win){ return win.document.documentElement.getAttribute('windowtype') === 'navigator:browser'; }
+};
+
+function attachDbFile(){
+	var file = Services.dirsvc.get('ProfD', Ci.nsIFile);
+		file.append('clicklessmenu.sqlite');
+	return file;
 };
 
 function startup(params, reason){
@@ -63,11 +65,19 @@ function shutdown(params, reason){
 };
 
 function uninstall(params, reason){
-//	dump('uninstall '+ reason +'  v'+ params.version +'\n');
-	if(reason !== ADDON_UNINSTALL) return;
-	var file = Services.dirsvc.get('ProfD', Ci.nsIFile);
-		file.append('clicklessmenu.sqlite');
-		file.remove(false);
+	if(reason === ADDON_UNINSTALL) attachDbFile().remove(false);
 };
 
-function install(params, reason) {};
+function install(params, reason) {
+	if(reason !== ADDON_UPGRADE) return;
+
+	var file = attachDbFile();
+	var conn = Services.storage.openDatabase(file);
+
+	["INSERT INTO 'prefs' VALUES('openTrigger','0');",
+	 "INSERT INTO 'prefs' VALUES('triggerKey','alt + Q');"
+	].forEach( function(e){ conn.executeSimpleSQL(e); } );
+
+	conn.close();
+	file = conn = null;
+};

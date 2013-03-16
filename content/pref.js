@@ -1,8 +1,5 @@
 //var log = function(msg){ dump( new Date().toString().substring(16,24) + ' |  D| ' + msg + '\n' ); }
 
-var dummyF = function(){ return false; };
-var dummyN = function(){};
-
 var Pref = {
 	userAcceptWin: false,
 	menuItems : null,
@@ -38,7 +35,7 @@ var Pref = {
 	notifyUpdated: function(){
 		var menu, wins = Services.wm.getEnumerator('navigator:browser');
 		while (wins.hasMoreElements())
-			if( menu = wins.getNext().QueryInterface(Ci.nsIDOMWindow).document.getElementById('CLMN_menu') )
+			if( menu = wins.getNext().QueryInterface(Ci.nsIDOMWindow).document.getElementById('appcontent') )
 				menu.dispatchEvent( new CustomEvent("prefclose") );
 	},
 
@@ -203,7 +200,26 @@ var Pref = {
 		$('openTabActivate' + T.id.charAt(T.id.length-1)).disabled = (T.value === '3' || T.value === '2');
 	},
 
+	// create a key text for display from entered key strokes
+	capturekey: function(e){
+		if( [9, 16, 17, 18].indexOf(e.keyCode) > -1 ) return;	// tab, shift, ctrl, alt
+		e.preventDefault();
+
+		var modifier = '';
+		if(e.ctrlKey)  modifier += 'ctrl + ';
+		if(e.shiftKey) modifier += 'shift + ';
+		if(e.altKey)   modifier += 'alt + ';
+
+		// こんな感じになる  :  shift + alt + Q
+		// 非表示文字はこんな:  ctrl + RETURN
+		e.target.value = modifier + EventKey[e.keyCode].replace('VK_', '');
+	},
 };
+
+// interchange. {DOM_VK_CONTROL : 17} -> {17 : VK_CONTROL}
+// キーストロークから表示用の文字列を取り出す用
+var EventKey = {};
+for(var p in window.KeyEvent) EventKey[ window.KeyEvent[p] ] = p.replace('DOM_', '');
 
 
 // associate field-id with db-column#

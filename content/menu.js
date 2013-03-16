@@ -1,66 +1,35 @@
 //var log = loger('M  ');
 
 var MenuManager = {
-	// appcontentにくっつけるイベントリスナ ／ MenuManagerが使う
-	listeners: {
-		'mousedown': function CLMN_mousedown(e){ MenuManager.draggingEntryX = e.screenX; MenuManager.draggingEntryY = e.screenY; },
-		'mouseup'  : function CLMN_mouseup(e)  { MenuManager.reOpen(e); },
-		'dblclick' : function CLMN_dblclick(e) { MenuManager.reOpen(e); }
-	},
-
 	init: function(aUnique){
-		this.draggingEntryX = this.draggingEntryX = 0;
-		for(var e in this.listeners) $('appcontent').addEventListener(e, this.listeners[e] , false);
-
-		this.menu = $EL(OsDiffAbsober[Services.appinfo.OS].menuElement, {id: 'CLMN_menu', value: aUnique, noautofocus: true, noautohide: true});
+		this.menu = $EL(this.osGap.menuElement, {id: 'CLMN_menu', value: aUnique, noautofocus: true, noautohide: true});
 		var menuListeners = {
 			'mouseover'  : function(e){ MenuManager.abortTimers(); },
 			'mouseout'   : function(e){ MenuManager.setCloseTimer(); },
 			'click'      : function(e){ MenuManager.runMenu(e); },
-			'prefclose'  : function(e){ MenuManager.loadAppData(); },
 		};
-		for(var ev in menuListeners) this.menu.addEventListener(ev, menuListeners[ev].bind(this), true);
-
+		for(var ev in menuListeners) this.menu.addEventListener(ev, menuListeners[ev]);
 		$('mainPopupSet').appendChild( this.menu );
+
+		window.setTimeout(this.loadAppData.bind(this), 500);
 	},
 
 	// close & open Menu / book close
 	reOpen: function(e){
-		// load common preferences & clip data
-		if( $('CLMN_menu').childNodes.length === 0 ){
-			DB.init();
-			this.loadAppData();
-		}
-		this.closeMenu();
-
 		// 検索対象文字列を確定
+		MenuManager.selectedChars = MenuManager.getSelectedChars();
+
+		if( this.trigger.preventOpen(e) ) return;
+		this.menu.openPopupAtScreen( e.screenX + Number( this.menuPosX ), e.screenY + Number( this.menuPosY ), true );
+		this.setCloseTimer();
+	},
+
+	// 
+	getSelectedChars: function(){
 		var cd = document.commandDispatcher;
 		var focused = cd.focusedElement;
-		this.selectedChars = ( cd.focusedWindow.getSelection().toString()
+		return ( cd.focusedWindow.getSelection().toString()
 			|| (this.enableTxtField && focused && focused.value && focused.value.substring(focused.selectionStart, focused.selectionEnd)) );
-
-		if( this.preventOpen(e) ) return;
-		this.openMenu(e);
-	},
-
-	// conditions of prevent for open popup
-	//  1. no characters are selected (characters in text area is optional)
-	//  2. not left clicked
-	//  3. mouseup event without drag (for when anchor tag clicked)
-	preventOpen: function(e){
-		return( ( !this.selectedChars )
-			||  ( e.button !== 0 )
-			||  ( e.type === 'mouseup' && e.screenX === this.draggingEntryX && e.screenY === this.draggingEntryY )
-		);
-	},
-
-	// notify open to clips
-	openMenu:  function(e){
-		// timer to open
-		this.openTimer = window.setTimeout(function() {
-			this.menu.openPopupAtScreen( e.screenX + Number( this.menuPosX ), e.screenY + Number( this.menuPosY ), true );
-			this.setCloseTimer();
-		}.bind(this), this.menuDurOpen);
 	},
 
 	// notify close to clips
@@ -75,14 +44,12 @@ var MenuManager = {
 	},
 
 	// calcel close timer
-	abortTimers: function(){
-		window.clearTimeout(this.openTimer);
-		window.clearTimeout(this.closeTimer);
-	},
+	abortTimers: function(){ window.clearTimeout(this.closeTimer); },
 
-	// 最新の尺度情報(DB値)をclipに反映する(前回までのものは削除)
+	// 最新のデータをmenuに反映する(前回までのものは削除)
 	loadAppData: function(){
 		// load common preferences (except in delayed load keys)
+		DB.init();
 		var prefs = DB.getPrefs();
 		PrefsKeys.forEach( function(e){
 			( e[2] ) ? this[ e[0] ] = (prefs[ e[1] ] === e[2])
@@ -90,6 +57,15 @@ var MenuManager = {
 		}, this );
 
 		this.refreshMenu();
+
+		// prepare popup triggers
+		(this.trigger = TriggerSwitcher[this.openTrigger]).keySetup();
+		delete this.openTrigger;
+		delete this.triggerKey;
+
+		// listeners for appcontent is watching popup triggers
+		var content  = $('appcontent');
+		for(var e in this.trigger.listeners) content.addEventListener(e, this.trigger.listeners[e]);
 	},
 
 	// menuにDB値反映
@@ -97,7 +73,7 @@ var MenuManager = {
 		var children = this.menu.childNodes;
 		for(var i=children.length-1; i>=0; i--) this.menu.removeChild(children[i]);
 
-		var menuitemElement = OsDiffAbsober[Services.appinfo.OS].itemElement;
+		var menuitemElement = this.osGap.itemElement;
 		DB.getMenuData().forEach(function(e){
 			this.menu.appendChild( (e.url_script === '<separator>')
 				? $EL('menuseparator')
@@ -118,32 +94,26 @@ var MenuManager = {
 		var {url_script, isScript} = DB.getUrlScriptById(e.target.id);
 		var prefs = DB.getPrefs();
 		var opentabPosition = prefs['openTabPos' + e.button];
-		if(opentabPosition === '3'){	// not assigned
-			e.preventDefault();
-			return;
-		}
 
 		(isScript === 1)
-			? this.execCmd(url_script)
-			: this.openUrl(url_script, opentabPosition, prefs['openTabActivate' + e.button])
-		;
+			? (opentabPosition!=='3') && window.setTimeout(url_script, 0)
+			: MenuManager.behaviors[ opentabPosition ]({
+				url: this.composeUrl(url_script, this.selectedChars),
+				pos: opentabPosition,
+				act: prefs['openTabActivate' + e.button]
+			  });
+		this.closeMenu();
 	},
 
-	// execute user script
-	execCmd: function(script){
-		window.setTimeout(script, 0);
-		this.menu.hidePopup();
-	},
-
-	// open the url in background and menu is not close
-	openUrl: function(aUrl, openTabPos, openTabActivate){
-		var url = this.composeUrl(aUrl, this.selectedChars);
-		(openTabPos === '2')
-			? (window.open(url))
-			: Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator)
-				.getMostRecentWindow("navigator:browser").gBrowser
-					.loadOneTab( url, {relatedToCurrent: (openTabPos === '0'), inBackground: (openTabActivate === '0')} );
-		this.menu.hidePopup();
+	// open url according to preferences
+	behaviors: {
+		0: function({url, pos, act}){	// 現在のタブの右に開く
+			Services.wm.getMostRecentWindow("navigator:browser").gBrowser
+				.loadOneTab( url, {relatedToCurrent: (pos === '0'), inBackground: (act === '0')} );
+		},
+		1: function(args){ MenuManager.behaviors[0](args); },	// 末尾に開く
+		2: function({url}){ window.open(url); },	// 新しいウィンドウで開く
+		3: dummyN,	// 割当なし
 	},
 
 	// trim, compose, URL encode and schema repair if neccesary
@@ -161,21 +131,140 @@ var MenuManager = {
 		return url;
 	},
 
+	// ちょっと捨てる
+	dispose: function(){
+		this.abortTimers();
+		TriggerSwitcher.removeKeyset();
+		var content = $('appcontent');
+		for(var e in this.trigger.listeners) content.removeEventListener(e, this.trigger.listeners[e]);
+	},
+
 	// 配下の全インスタンス開放
 	shutdown: function(ev){
 		DB.destroy();
-		this.abortTimers();
+		this.dispose();
 		this.menu = null;
 		$('mainPopupSet').removeChild( $('CLMN_menu') );
-		for(var e in this.listeners) $('appcontent').removeEventListener(e, this.listeners[e]);
 	},
 
+	// close the gap between each OS
+	osGap: null,
 };
 
-// absorb the differences between the OS.
-// in Linux, menupopup takes over the focus from 'contentpane'.
+
+// ポップアップ方式を分割する人
+// 要素名が数字のやつがポップアップ方式の実装
+var TriggerSwitcher = {
+	setScreenXY : function(e){ return {screenX: e.screenX, screenY: e.screenY}; },
+	reOpen   : function(e){ MenuManager.reOpen(e); },
+	loadPref : function(e){ MenuManager.dispose(); MenuManager.loadAppData(); },
+
+	// create key element
+	keySetup: function(){
+		TriggerSwitcher.removeKeyset();
+
+		// DBからとってきたやつを要素生成用にばらす: 'ctrl + shift + alt + A' -> [ctrl, shift, alt, A]
+		var modifiers = MenuManager.triggerKey.split(' + ');
+		var key = modifiers.pop();
+		if(modifiers[0] === 'ctrl') modifiers[0] = 'control';
+
+		var keyAttrs = {id: 'clipreference_key', modifiers: modifiers, oncommand: 'void(0);'};
+		$extend( keyAttrs, (key.length > 1 ? {keycode: 'VK_' + key} : {key: key}) );
+		var keyEl = $EL('key', keyAttrs);
+
+		keyEl.addEventListener('command', function(e){
+			var event = window.document.createEvent('CustomEvent');
+			event.initCustomEvent('hotkey', true, true, null);
+			$('appcontent').dispatchEvent(event);
+		}, false);
+		$('mainKeyset').parentNode.appendChild( $EL('keyset', {id: 'clicklessmenu_keyset'}, [keyEl]) );
+	},
+	removeKeyset : function(){
+		var lastkeyset = $('clicklessmenu_keyset');
+		if(lastkeyset) lastkeyset.parentNode.removeChild(lastkeyset);
+	},
+};
+// functionの生成数を減らす。参照エラー回避のためにTriggerSwitcherを生成してから中身を入れる
+$extend(TriggerSwitcher, {
+	// type-immediate.  popup when select the string.
+	0: {
+		// set up the hot key
+		keySetup: dummyN,
+
+		// appcontentにくっつけるイベントリスナ
+		listeners: {
+			'prefclose': TriggerSwitcher.loadPref,
+			'dblclick' : TriggerSwitcher.reOpen,
+			'mouseup'  : TriggerSwitcher.reOpen,
+			'mousedown': function(e){
+				MenuManager.closeMenu();
+				MenuManager.entryPoint = {screenX: e.screenX, screenY: e.screenY};
+			},
+		},
+
+		// conditions to prevent popup
+		//  1. no characters are selected
+		//  2. not main mouse button
+		//  3. mouseup event without drag (for when anchor tag clicked)
+		preventOpen: function(e){
+			return( ( !MenuManager.selectedChars )
+				||  ( e.button !== 0 )
+				||  ( e.type === 'mouseup' && e.screenX === MenuManager.entryPoint.screenX
+						&& e.screenY === MenuManager.entryPoint.screenY )
+			);
+		},
+	},
+
+	// type-hotkey.  popup when press the hotkey after characters selected.
+	1: {
+		keySetup: TriggerSwitcher.keySetup,
+		listeners: {
+			'prefclose': TriggerSwitcher.loadPref,
+			'hotkey'   : function(e){ MenuManager.reOpen( $extend(e, MenuManager.endPoint) ); },
+			'mousedown': MenuManager.closeMenu(),
+			'mouseup'  : function(e){ MenuManager.endPoint = TriggerSwitcher.setScreenXY(e); },
+		},
+		//  1. no characters are selected
+		preventOpen: function(e){ return( !MenuManager.selectedChars ); },
+	},
+
+	// type-hold.  popup when select the string while hold down the hotkey.
+	2: {
+		keySetup: TriggerSwitcher.keySetup,
+		listeners: {
+			'prefclose': TriggerSwitcher.loadPref,
+			'dblclick' : TriggerSwitcher.reOpen,
+			'hotkey'   : function(e){ MenuManager.keypressflg = true; },
+			'mousedown': function(e){
+				MenuManager.closeMenu();
+				MenuManager.entryPoint = TriggerSwitcher.setScreenXY(e);
+				MenuManager.keypressflg = false;
+			},
+			'mouseup'  : function(e){
+				MenuManager.endPoint = TriggerSwitcher.setScreenXY(e);
+				MenuManager.reOpen(e);
+			},
+		},
+		//  1. no characters are selected
+		//  2. not main mouse button
+		//  3. mouseup event without drag (for when anchor tag clicked)
+		//  4. hotkey is not hold down
+		preventOpen: function(e){
+			return( ( !MenuManager.selectedChars )
+				||  ( e.button !== 0 )
+				||  ( e.type === 'mouseup' && e.screenX === MenuManager.entryPoint.screenX
+						&& e.screenY === MenuManager.entryPoint.screenY )
+				||  ( !MenuManager.keypressflg )
+			);
+		},
+	},
+});
+
+
+// inject entity to MenuManager.osGap along each OS.
+// in Linux, menupopup takes over the focus from 'appContent'.
 // and mousedown event will be prevented.
-var OsDiffAbsober = {
+MenuManager.osGap = {
 	WINNT: {
 		menuElement: 'menupopup',
 		itemElement: 'menuitem'
@@ -184,8 +273,8 @@ var OsDiffAbsober = {
 		menuElement: 'panel',
 		itemElement: 'toolbarbutton'
 	},
-	Darwin: {	// for MacOS, just in case
-		menuElement: 'menupopup',
-		itemElement: 'menuitem'
+	Darwin: {	// just in case
+		menuElement: 'panel',
+		itemElement: 'toolbarbutton'
 	}
-};
+}[Services.appinfo.OS];
