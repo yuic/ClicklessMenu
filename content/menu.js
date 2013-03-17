@@ -32,7 +32,7 @@ var MenuManager = {
 			|| (this.enableTxtField && focused && focused.value && focused.value.substring(focused.selectionStart, focused.selectionEnd)) );
 	},
 
-	// notify close to clips
+	// close menu and cancel timer
 	closeMenu: function(){
 		this.abortTimers();
 		if(this.menu) this.menu.hidePopup();
@@ -168,7 +168,7 @@ var TriggerSwitcher = {
 		var key = modifiers.pop();
 		if(modifiers[0] === 'ctrl') modifiers[0] = 'control';
 
-		var keyAttrs = {id: 'clipreference_key', modifiers: modifiers, oncommand: 'void(0);'};
+		var keyAttrs = {id: 'clicklessmenu_key', modifiers: modifiers, oncommand: 'void(0);'};
 		$extend( keyAttrs, (key.length > 1 ? {keycode: 'VK_' + key} : {key: key}) );
 		var keyEl = $EL('key', keyAttrs);
 
