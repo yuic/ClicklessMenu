@@ -70,38 +70,71 @@ var MenuManager = {
 
 	// menuにDB値反映
 	refreshMenu: function(){
-		var children = this.menu.childNodes;
-		for(var i=children.length-1; i>=0; i--) this.menu.removeChild(children[i]);
+		while(this.menu.hasChildNodes()) this.menu.removeChild(this.menu.firstChild);
 
-		var menuitemElement = this.osGap.itemElement;
-		DB.getMenuData().forEach(function(e){
-			this.menu.appendChild( (e.url_script === '<separator>')
-				? $EL('menuseparator')
-				: $EL(menuitemElement, {
-					id   :  e.id,
-					label:  e.name,
-					image: (e.favicon || 'chrome://clicklessmenu/content/icon/book.ico'),
-					class: 'menuitem-iconic'}
-				  )
-			);
-		}.bind(this));
+		var ItemUtil = {
+			// get the domain of url or the first row of user script
+			getTooltip: function(e){
+				if(e.isScript){
+					// get the first row
+					return e.url_script.match(/^.*\n*/i);
+				}else{
+					// get domain
+					if( e.url_script.indexOf('about:') === 0 || e.url_script.indexOf('chrome://') === 0 ){
+						return e.url_script
+					} else {
+						var domain = (e.url_script.match(/^[httpsfile]+:\/{2,3}([0-9a-zA-Z\.\-:]+?)\//i));
+						return (domain ? domain[1] : '');
+					}
+				}
+			},
+			getTypicalAttrs: function(e){
+				return { id:  e.id, label:  e.name, tooltiptext: ItemUtil.getTooltip(e),
+					class: 'menuitem-iconic', image: (e.favicon || 'chrome://clicklessmenu/content/icon/book.ico') }
+			},
+			// if iconBox(hbox) is already created, append it to menupopup before current menuitem
+			appendLastBoxAndChild: function(el, menu){
+				if(iconBox && menu.appendChild(iconBox)) iconBox = null; menu.appendChild(el);
+			},
+			createMenuitem: function(attr, styl){ return $EL(MenuManager.osGap.itemElement, attr, null, styl); },
+		};
+		var iconBox;	// for iconized menuitems that are horizontal alignment
+		DB.getMenuData().forEach( function(e){
+			if(e.url_script === '<separator>') {	// menuseparator
+				ItemUtil.appendLastBoxAndChild( $EL('menuseparator'), this.menu );
+			} else if(e.name) {	// last hbox and menuitem
+				ItemUtil.appendLastBoxAndChild( ItemUtil.createMenuitem(ItemUtil.getTypicalAttrs(e)), this.menu );
+			} else {	// menu item in hbox
+				if(!iconBox) iconBox = $EL('hbox', null, null, {margin: '2px', align: 'center'});
+				iconBox.appendChild( ItemUtil.createMenuitem(
+					$extend( ItemUtil.getTypicalAttrs(e), {orient: 'vertical'} ), {maxHeight: '20px', minHeight: '20px'}
+				) );
+			}
+		}.bind(this) );
+		if(iconBox) this.menu.appendChild( iconBox );
 	},
 
 	// get 'URL/SCRIPT' from db, and decide how run
 	runMenu: function(e){
-		if(e.target.tagName === 'menuseparator') return;
+		if(e.target.tagName === 'menuseparator' || !e.target.id) return;
 
 		var {url_script, isScript} = DB.getUrlScriptById(e.target.id);
 		var prefs = DB.getPrefs();
 		var opentabPosition = prefs['openTabPos' + e.button];
 
-		(isScript === 1)
-			? (opentabPosition!=='3') && window.setTimeout(url_script, 0)
-			: MenuManager.behaviors[ opentabPosition ]({
+		if(isScript === 1){
+			if(opentabPosition !== '3'){
+				window.setTimeout( '(function(){\ntry{' + prefs.codeLibrary +
+				'\n} catch(CLICKLESSMENU_EXP){Cu.reportError("ClicklessMenu: common code error\\n " + CLICKLESSMENU_EXP);};\n' +
+				url_script + '\n})();' , 0);
+			}
+		} else {
+			MenuManager.behaviors[ opentabPosition ]({
 				url: this.composeUrl(url_script, this.selectedChars),
 				pos: opentabPosition,
 				act: prefs['openTabActivate' + e.button]
-			  });
+			});
+		}
 		this.closeMenu();
 	},
 
@@ -114,6 +147,7 @@ var MenuManager = {
 		1: function(args){ MenuManager.behaviors[0](args); },	// 末尾に開く
 		2: function({url}){ window.open(url); },	// 新しいウィンドウで開く
 		3: dummyN,	// 割当なし
+		4: function({url}){ window.openWebPanel('', url); },	// open in sidebar
 	},
 
 	// trim, compose, URL encode and schema repair if neccesary
@@ -123,10 +157,10 @@ var MenuManager = {
 		var url = aUrl.replace(/<.*>/g, param);
 
 		// repair schema if it broken
-		if(url.indexOf('ttp://') === 0 || url.indexOf('ttps://') === 0 ){
-			url = 'h' + url;
-		}else if(url.indexOf('://') < 0 ){
-			url = 'http://' + url;
+		switch(true){
+			case (url.indexOf('ttp://' ) === 0) :;							/* break; */
+			case (url.indexOf('ttps://') === 0) : url = 'h' + url;			break;
+			case (url.indexOf(':') < 0)         : url = 'http://' + url;	break;
 		}
 		return url;
 	},
@@ -148,7 +182,11 @@ var MenuManager = {
 	},
 
 	// close the gap between each OS
-	osGap: null,
+	osGap: {
+		WINNT:  { menuElement: 'menupopup', itemElement: 'menuitem'      },
+		Linux:  { menuElement: 'panel'    , itemElement: 'toolbarbutton' },
+		Darwin: { menuElement: 'panel'    , itemElement: 'toolbarbutton' }
+	}[Services.appinfo.OS],
 };
 
 
@@ -259,22 +297,3 @@ $extend(TriggerSwitcher, {
 		},
 	},
 });
-
-
-// inject entity to MenuManager.osGap along each OS.
-// in Linux, menupopup takes over the focus from 'appContent'.
-// and mousedown event will be prevented.
-MenuManager.osGap = {
-	WINNT: {
-		menuElement: 'menupopup',
-		itemElement: 'menuitem'
-	},
-	Linux: {
-		menuElement: 'panel',
-		itemElement: 'toolbarbutton'
-	},
-	Darwin: {	// just in case
-		menuElement: 'panel',
-		itemElement: 'toolbarbutton'
-	}
-}[Services.appinfo.OS];

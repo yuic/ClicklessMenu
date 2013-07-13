@@ -156,15 +156,7 @@ var DB = {
 
 };
 
-
-var LocaleBundle = {
-	b:null,
-	getBundle: function(){
-		return ( this.b || (this.b = Services.strings.createBundle('chrome://clicklessmenu/locale/clicklessmenu.properties')) );
-	},
-
-	getString: function(key){ return this.getBundle().GetStringFromName(key); },
-};
 var $LOCALE = function(key){
-	return LocaleBundle.getString(key);
-};
+	b = Services.strings.createBundle('chrome://clicklessmenu/locale/clicklessmenu.properties');
+	return function(key){ return b.GetStringFromName(key); };
+}();

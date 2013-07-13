@@ -182,6 +182,7 @@ var Pref = {
 		if( !Pref.isReady2Restore || e.target.id !== 'restoreBtn' ) return;
 		var tree = treeView.treebox;
 		tree.rowCountChanged(1, -(Pref.menuItems.length-1) );
+		Services.strings.flushBundles();
 		DB.createTables();
 		Pref.dataLoad();
 		Pref.notifyUpdated();
@@ -197,7 +198,7 @@ var Pref = {
 
 	tabOpenPosChanged: function(e){
 		var T = e.target;
-		$('openTabActivate' + T.id.charAt(T.id.length-1)).disabled = (T.value === '3' || T.value === '2');
+		$('openTabActivate' + T.id.charAt(T.id.length-1)).disabled = !(T.value === '0' || T.value === '1');
 	},
 
 	// create a key text for display from entered key strokes
@@ -214,6 +215,18 @@ var Pref = {
 		// 非表示文字はこんな:  ctrl + RETURN
 		e.target.value = modifier + EventKey[e.keyCode].replace('VK_', '');
 	},
+	
+	// open sub dialog with parameters. returns last contents.
+	changeInSubDialog: function(argObj){
+		document.documentElement.openSubDialog(
+			'chrome://clicklessmenu/content/scriptEditor.xul',
+			'resizable,chrome,dialog=yes,centerscreen,modal=yes',
+			argObj
+		);
+		return ( argObj.edited ? argObj.result : argObj.arg);
+	},
+
+	openCodeLibrary: function(){ $('codeLibrary').value = Pref.changeInSubDialog({ arg: $('codeLibrary').value }); },
 };
 
 // interchange. {DOM_VK_CONTROL : 17} -> {17 : VK_CONTROL}
@@ -364,15 +377,8 @@ var treeView = {
 		var {row, col, part} = this.getCell(e);
 		if(!col.value || row.value === Pref.menuItems.length-1) return;
 
-		if( col.value.id === 'url' && Pref.menuItems[row.value].isScript ){
-			var argObj = { arg: Pref.menuItems[row.value].url_script };
-			document.documentElement.openSubDialog(
-				'chrome://clicklessmenu/content/scriptEditor.xul',
-				'resizable,chrome,dialog=yes,centerscreen,modal=yes',
-				argObj
-			);
-			if(argObj.edited) Pref.menuItems[row.value].url_script = argObj.result;
-		}
+		if( col.value.id === 'url' && Pref.menuItems[row.value].isScript )
+			Pref.menuItems[row.value].url_script = Pref.changeInSubDialog({ arg: Pref.menuItems[row.value].url_script });
 	},
 
 	// capture mousemove event on tree object. change color of delete button icon
@@ -386,8 +392,10 @@ var treeView = {
 	},
 
 	getCellProperties: function(row,col,props){
-		if( row === Pref.menuItems.length-1 )	// 'Edit here to add new item.'
-			props.AppendElement(Cc['@mozilla.org/atom-service;1'].getService(Ci.nsIAtomService).getAtom('newItem'));
+		if( row === Pref.menuItems.length-1 ){	// 'Edit here to add new item.' is grayed out
+			if(props) props.AppendElement(Cc['@mozilla.org/atom-service;1'].getService(Ci.nsIAtomService).getAtom('newItem'));	// ff15-21
+			return 'newItem';	// ff22->
+		}
 	},
 
 	getLevel: dummyF,

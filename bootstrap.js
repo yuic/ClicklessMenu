@@ -73,11 +73,7 @@ function install(params, reason) {
 
 	var file = attachDbFile();
 	var conn = Services.storage.openDatabase(file);
-
-	["INSERT INTO 'prefs' VALUES('openTrigger','0');",
-	 "INSERT INTO 'prefs' VALUES('triggerKey','alt + Q');"
-	].forEach( function(e){ conn.executeSimpleSQL(e); } );
-
+	conn.executeSimpleSQL("INSERT INTO 'prefs' VALUES('codeLibrary','// The code defined in here, can be used by other userscripts.\n\n// just shorten the function name.\nconst $ = function(id) { return document.getElementById(id); };\n\n// get selected text on browser\nvar cd  = document.commandDispatcher;\nvar el  = cd.focusedElement;\nconst SELECTED_TEXT = cd.focusedWindow.getSelection().toString() || (el && el.value && el.value.substring(el.selectionStart, el.selectionEnd));\ncd = el = null;');");
 	conn.close();
 	file = conn = null;
 };

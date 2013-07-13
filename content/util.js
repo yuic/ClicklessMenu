@@ -26,7 +26,7 @@ var $extend = function(instantiatedBase, append){
 
 // common preference keys (except in delayed load keys)
 var PrefsKeys = [
-	// element id     ,  column name     ,  boolean <-> int (for explicit conversion)
+	// element id      ,  column name      ,  boolean <-> int (for explicit conversion)
 	['menuPosX'        , 'menuPosX'             ],
 	['menuPosY'        , 'menuPosY'             ],
 	['menuDurClose'    , 'menuDurClose'         ],
@@ -43,6 +43,7 @@ var PrefsKeysAll = PrefsKeys.concat([
 	['openTabPos1'     , 'openTabPos1'          ],
 	['openTabActivate2', 'openTabActivate2', '1'],
 	['openTabPos2'     , 'openTabPos2'          ],
+	['codeLibrary'     , 'codeLibrary'          ],
 ]);
 
 var dummyF = function(){ return false; };

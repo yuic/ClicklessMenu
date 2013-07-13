@@ -5,6 +5,7 @@
 	<!ENTITY pref.tree.url_script        "URL/SCRIPT">
 	<!ENTITY pref.tree.isScript          "SCRIPT?">
 	<!ENTITY pref.tree.delete            "x">
+	<!ENTITY pref.tree.codeLibrary       "Common code">
 	<!ENTITY pref.tree.description       "The item will not be registered if 'URL/SCRIPT' field is empty.">
 
 <!ENTITY pref.timing.caption "Opening-closing timing">
@@ -24,7 +25,7 @@
 
 <!ENTITY pref.open.caption "Behavior in selecting a menu">
 	<!ENTITY pref.open.head1             "Clicked mouse button">
-	<!ENTITY pref.open.head2             "Position for a new tab">
+	<!ENTITY pref.open.head2             "Location for open the url">
 	<!ENTITY pref.open.head3             "Activate new tab">
 	<!ENTITY pref.open.buttonprimary     "Primary button">
 	<!ENTITY pref.open.buttonwheel       "Middle button">
@@ -33,6 +34,7 @@
 	<!ENTITY pref.open.position1         "The end">
 	<!ENTITY pref.open.position2         "New window">
 	<!ENTITY pref.open.position3         "---">
+	<!ENTITY pref.open.position4         "Sidebar">
 
 <!ENTITY pref.restore.caption "Restore the default setting">
 	<!ENTITY pref.restore.button         "Restore">
