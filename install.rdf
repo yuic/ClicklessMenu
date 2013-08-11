@@ -4,7 +4,7 @@
 	<em:id>clicklessmenu_y@kitori.umauma</em:id>
 	<em:type>2</em:type>
 	<em:name>Clickless Menu</em:name>
-	<em:version>2.4</em:version>
+	<em:version>2.5</em:version>
 	<em:description>Open the menu when you select text on browser.</em:description>
 	<em:creator>yuic</em:creator>
 	<em:optionsURL>chrome://clicklessmenu/content/prefs.xul</em:optionsURL>
@@ -30,7 +30,7 @@
 		<Description>
 			<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
 			<em:minVersion>15.0</em:minVersion>
-			<em:maxVersion>23.0a2</em:maxVersion>
+			<em:maxVersion>24.0a2</em:maxVersion>
 		</Description>
 	</em:targetApplication>
 

@@ -73,7 +73,13 @@ function install(params, reason) {
 
 	var file = attachDbFile();
 	var conn = Services.storage.openDatabase(file);
-	conn.executeSimpleSQL("INSERT INTO 'prefs' VALUES('codeLibrary','// The code defined in here, can be used by other userscripts.\n\n// just shorten the function name.\nconst $ = function(id) { return document.getElementById(id); };\n\n// get selected text on browser\nvar cd  = document.commandDispatcher;\nvar el  = cd.focusedElement;\nconst SELECTED_TEXT = cd.focusedWindow.getSelection().toString() || (el && el.value && el.value.substring(el.selectionStart, el.selectionEnd));\ncd = el = null;');");
+
+	// v2.4のfullがrejectされたので、v2.4での追加キーが入っていないユーザが多い
+	var sta = conn.createStatement("SELECT count(*) FROM prefs WHERE key='codeLibrary';");
+	sta.executeStep();
+	if(sta.getInt32(0) === 0)
+		conn.executeSimpleSQL("INSERT INTO 'prefs' VALUES('codeLibrary','// The code defined in here, can be used by other userscripts.\n\n// just shorten the function name.\nvar $ = function(id) { return document.getElementById(id); };\n\n// get selected text on browser\nvar cd  = document.commandDispatcher;\nvar el  = cd.focusedElement;\nvar SELECTED_TEXT = cd.focusedWindow.getSelection().toString() || (el && el.value && el.value.substring(el.selectionStart, el.selectionEnd));\ncd = el = null;');");
+
 	conn.close();
 	file = conn = null;
 };

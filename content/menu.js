@@ -89,26 +89,27 @@ var MenuManager = {
 				}
 			},
 			getTypicalAttrs: function(e){
-				return { id:  e.id, label:  e.name, tooltiptext: ItemUtil.getTooltip(e),
-					class: 'menuitem-iconic', image: (e.favicon || 'chrome://clicklessmenu/content/icon/book.ico') }
+				return { id:  'clicklessmenu.menuitem.' + e.id, label:  e.name, class: 'menuitem-iconic',
+					image: (e.favicon || 'chrome://clicklessmenu/content/icon/book.ico') }
 			},
 			// if iconBox(hbox) is already created, append it to menupopup before current menuitem
 			appendLastBoxAndChild: function(el, menu){
 				if(iconBox && menu.appendChild(iconBox)) iconBox = null; menu.appendChild(el);
 			},
-			createMenuitem: function(attr, styl){ return $EL(MenuManager.osGap.itemElement, attr, null, styl); },
 		};
 		var iconBox;	// for iconized menuitems that are horizontal alignment
 		DB.getMenuData().forEach( function(e){
 			if(e.url_script === '<separator>') {	// menuseparator
 				ItemUtil.appendLastBoxAndChild( $EL('menuseparator'), this.menu );
-			} else if(e.name) {	// last hbox and menuitem
-				ItemUtil.appendLastBoxAndChild( ItemUtil.createMenuitem(ItemUtil.getTypicalAttrs(e)), this.menu );
-			} else {	// menu item in hbox
-				if(!iconBox) iconBox = $EL('hbox', null, null, {margin: '2px', align: 'center'});
-				iconBox.appendChild( ItemUtil.createMenuitem(
-					$extend( ItemUtil.getTypicalAttrs(e), {orient: 'vertical'} ), {maxHeight: '20px', minHeight: '20px'}
-				) );
+			} else {
+				// do not attach tooltip text in linux
+				var attrs = $extend( ItemUtil.getTypicalAttrs(e), { WINNT: {tooltiptext: ItemUtil.getTooltip(e)} }[Services.appinfo.OS] );
+				if(e.name){
+					ItemUtil.appendLastBoxAndChild( $EL(MenuManager.osGap.itemElement, attrs), this.menu );
+				}else{
+					if(!iconBox) iconBox = $EL('toolbox', null, [$EL('hbox')], {border: 'none'});
+					iconBox.firstChild.appendChild( $EL('toolbarbutton', attrs) );
+				}
 			}
 		}.bind(this) );
 		if(iconBox) this.menu.appendChild( iconBox );
@@ -118,7 +119,7 @@ var MenuManager = {
 	runMenu: function(e){
 		if(e.target.tagName === 'menuseparator' || !e.target.id) return;
 
-		var {url_script, isScript} = DB.getUrlScriptById(e.target.id);
+		var {url_script, isScript} = DB.getUrlScriptById(e.target.id.substring(23));	// truncate 'clicklessmenu.menuitem.'
 		var prefs = DB.getPrefs();
 		var opentabPosition = prefs['openTabPos' + e.button];
 
